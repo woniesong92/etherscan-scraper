@@ -1,21 +1,28 @@
 import requests
 import csv
 import sys
+from time import sleep
 from bs4 import BeautifulSoup
 
 def scrape(num_pages=1, tx_limit=1):
-  print("Parsing %d pages with with tx count >=%d...\n" % (num_pages, tx_limit))
   api_url = "https://etherscan.io/contractsVerified/"
+  req_delay = 0.1
+  print("Parsing %d pages with with tx count >= %d..." % (num_pages, tx_limit))
+  print("We wait for %0.1f sec between each request to be civil!" % req_delay)
 
   with open('data.csv', 'w') as csvfile:
     fieldnames = ['addr', 'contract_name', 'compiler', 'balance', 'tx_count', 'settings', 'date_verified']
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
     writer.writeheader()
 
-    for i in range(num_pages):
+    for i in range(1, num_pages):
       url = api_url + str(i)
-      print("Scraping: %s..." % url)
+
+      # NOTE: sleep for [req_delay] between requests to avoid getting flagged
+      sleep(req_delay)
       resp = requests.get(url)
+      print("URL: %s, Status: %s" % (url, resp.status_code))
+
       c = resp.content
       soup = BeautifulSoup(c, 'html.parser')
 
